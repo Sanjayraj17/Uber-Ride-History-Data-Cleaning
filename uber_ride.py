@@ -248,3 +248,11 @@ print(average)
 avg_miles = uber_df.groupby('day-night')['miles'].mean()
 avg_miles
 
+# Average ride duration for every purpose
+
+uber_df.groupby('purpose')['ride_duration'].mean()
+
+# Top three locations where start and stop are same
+
+uber_df.groupby(['start','stop']).size().sort_values(ascending = False).head(3)
+
