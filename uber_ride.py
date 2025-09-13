@@ -149,3 +149,102 @@ for p in ax.patches:
 plt.xticks(rotation = 90)
 plt.show()
 
+# Scatter plot for miles vs category
+
+plt.figure(figsize = (10,6))
+
+sns.scatterplot(data = uber_df, x = 'time', y = 'MILES*', hue = 'CATEGORY*')
+
+plt.title('Miles vs Category')
+
+plt.show()
+
+# creating a block of code for finding round trips
+
+def round(x):
+    if x['START*'] == x['STOP*']:
+        return 'YES'
+    else :
+        return 'NO'
+
+uber_df['ROUND_TRIP'] = uber_df.apply(round, axis = 1)
+
+# visualizing the number of round trips
+
+sns.countplot(uber_df['ROUND_TRIP'])
+plt.show()
+
+# Extracting month from the start date
+
+uber_df['MONTH'] = pd.DatetimeIndex(uber_df['START_DATE*']).month
+uber_df['MONTH']
+
+#  Creating a dictionary for mapping the name of the month
+
+dict = { 1:'jan', 2 :'feb',3:'mar',4:'apr',5:'may',6:'june',7:'july',8:'aug',9:'sep',10:'oct',11:'nov',12:'dec'}
+uber_df['MONTH'] = uber_df['MONTH'].map(dict)
+
+# Visualizing the number of rides in each month
+
+plt.figure(figsize = (15,7))
+sns.countplot(uber_df['MONTH'])
+plt.show()
+
+# Are theremore rides on weekday or weekend
+
+uber_df['WEEKDAY'] = uber_df['START_DATE*'].dt.day_name()
+
+plt.figure(figsize = (10,5))
+sns.countplot(data = uber_df, x = 'WEEKDAY',order = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],  palette = 'Set3')
+plt.title('Rides on weekday')
+plt.xlabel('Days')
+plt.show()
+
+
+# Rides across different month
+
+sns.countplot(data = uber_df, x = 'MONTH', palette = 'Set3')
+plt.title("Rides across different month")
+plt.show()
+
+# Rides by time of the day (peak hours)
+
+sorted_time_counts = uber_df['time'].sort_values(ascending = False)
+
+plt.figure(figsize = (10,6))
+
+ax = sns.countplot( data = uber_df, x = 'time', order = sorted_time_counts, palette = 'viridis')
+
+for p in ax.patches:
+    ax.annotate(f'{p.get_height() : .1f}', (p.get_x() + p.get_width() / 2. , p.get_height()), ha = 'center', va = 'bottom')
+plt.title('Rides by time of the day')
+
+plt.show()
+
+# Modifying the names of the column
+
+uber_df.columns = uber_df.columns.str.replace('*','',regex = False).str.replace(' ','').str.lower().str.strip()
+
+# Minimum and maximum time taken between rides in each category
+
+uber_df['ride_duration'] = (uber_df['end_date'] - uber_df['start_date']).dt.total_seconds() / 60
+
+duration_by_category = uber_df.groupby('category')['ride_duration'].agg(['min','max'])
+
+duration_by_category
+
+# Average ride in each day of the week
+
+uber_df['weekday'] = uber_df['start_date'].dt.day_name()
+
+rides_by_weekday = uber_df.groupby('weekday').size()
+
+average = rides_by_weekday / uber_df['weekday'].nunique()
+
+print(average)
+
+# Average miles travelled in each period of a day
+
+avg_miles = uber_df.groupby('day-night')['miles'].mean()
+avg_miles
+
